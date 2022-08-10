@@ -62,11 +62,11 @@ class KatOsc:
 
 		self.sync_params_test_char_value = 97 # Character value to use when testing sync parameters
 
-		self.param_visible = "KAT_Visible"
-		self.param_pointer = "KAT_Pointer"
-		self.param_sync = "KAT_CharSync"
+		self.param_visible = "KATVisible"
+		self.param_pointer = "KATPointer"
+		self.param_sync = "KATCharSync"
 
-		self.osc_parameter_prefix = "/avatar/parameters/"
+		self.osc_parameter_prefix = "/avatar/parameter/"
 		self.osc_avatar_change_path = "/avatar/change"
 		self.osc_text = ""
 		self.target_text = ""
