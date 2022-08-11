@@ -62,13 +62,13 @@ class KatOsc:
 
 		self.sync_params_test_char_value = 97 # Character value to use when testing sync parameters
 
-		self.param_visible_vrc = "KATVisible"
-		self.param_pointer_vrc = "KATPointer"
-		self.param_sync_vrc = "KATCharSync"
+		self.param_visible_vrc = "KAT_Visible"
+		self.param_pointer_vrc = "KAT_Pointer"
+		self.param_sync_vrc = "KAT_CharSync"
 		
-		self.param_visible_cvr = "KAT_Visible"
-		self.param_pointer_cvr = "KAT_Pointer"
-		self.param_sync_cvr = "KAT_CharSync"
+		self.param_visible_cvr = "KATVisible"
+		self.param_pointer_cvr = "KATPointer"
+		self.param_sync_cvr = "KATCharSync"
 		
 		self.osc_parameter_prefix_vrc = "/avatar/parameters/"
 		self.osc_parameter_prefix_cvr = "/avatar/parameter/"
@@ -317,7 +317,7 @@ class KatOsc:
 		self.osc_client = udp_client.SimpleUDPClient(self.osc_ip, self.osc_port)
 		self.osc_timer = RepeatedTimer(self.osc_delay, self.osc_timer_loop)
 
-		self.osc_client.send_message(self.osc_parameter_prefix_vrc + self.param_visible_cvr, True) # Make KAT visible
+		self.osc_client.send_message(self.osc_parameter_prefix_vrc + self.param_visible_vrc, True) # Make KAT visible
 		self.osc_client.send_message(self.osc_parameter_prefix_cvr + self.param_visible_cvr, True) # Make KAT visible
 		
 		self.osc_client.send_message(self.osc_parameter_prefix_vrc + self.param_pointer_vrc, 255) # Clear KAT text
