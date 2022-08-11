@@ -62,11 +62,17 @@ class KatOsc:
 
 		self.sync_params_test_char_value = 97 # Character value to use when testing sync parameters
 
-		self.param_visible = "KATVisible"
-		self.param_pointer = "KATPointer"
-		self.param_sync = "KATCharSync"
-
-		self.osc_parameter_prefix = "/avatar/parameter/"
+		self.param_visible_vrc = "KATVisible"
+		self.param_pointer_vrc = "KATPointer"
+		self.param_sync_vrc = "KATCharSync"
+		
+		self.param_visible_cvr = "KAT_Visible"
+		self.param_pointer_cvr = "KAT_Pointer"
+		self.param_sync_cvr = "KAT_CharSync"
+		
+		self.osc_parameter_prefix_vrc = "/avatar/parameters/"
+		self.osc_parameter_prefix_cvr = "/avatar/parameter/"
+		
 		self.osc_avatar_change_path = "/avatar/change"
 		self.osc_text = ""
 		self.target_text = ""
@@ -311,10 +317,15 @@ class KatOsc:
 		self.osc_client = udp_client.SimpleUDPClient(self.osc_ip, self.osc_port)
 		self.osc_timer = RepeatedTimer(self.osc_delay, self.osc_timer_loop)
 
-		self.osc_client.send_message(self.osc_parameter_prefix + self.param_visible, True) # Make KAT visible
-		self.osc_client.send_message(self.osc_parameter_prefix + self.param_pointer, 255) # Clear KAT text
+		self.osc_client.send_message(self.osc_parameter_prefix_vrc + self.param_visible_cvr, True) # Make KAT visible
+		self.osc_client.send_message(self.osc_parameter_prefix_cvr + self.param_visible_cvr, True) # Make KAT visible
+		
+		self.osc_client.send_message(self.osc_parameter_prefix_vrc + self.param_pointer_vrc, 255) # Clear KAT text
+		self.osc_client.send_message(self.osc_parameter_prefix_cvr + self.param_pointer_cvr, 255) # Clear KAT text
+		
 		for value in range(self.sync_params):
-			self.osc_client.send_message(self.osc_parameter_prefix + self.param_sync + str(value), 0.0) # Reset KAT characters sync
+			self.osc_client.send_message(self.osc_parameter_prefix_vrc + self.param_sync_vrc + str(value), 0.0) # Reset KAT characters sync
+			self.osc_client.send_message(self.osc_parameter_prefix_cvr + self.param_sync_cvr + str(value), 0.0) # Reset KAT characters sync
 
 		# Setup OSC Server
 		self.osc_server = False
@@ -334,7 +345,8 @@ class KatOsc:
 				self.osc_server_test_step = 1
 
 				self.osc_dispatcher = dispatcher.Dispatcher()
-				self.osc_dispatcher.map(self.osc_parameter_prefix + self.param_sync + "*", self.osc_server_handler_char)
+				self.osc_dispatcher.map(self.osc_parameter_prefix_vrc + self.param_sync_vrc + "*", self.osc_server_handler_char_vrc)
+				self.osc_dispatcher.map(self.osc_parameter_prefix_cvr + self.param_sync_cvr + "*", self.osc_server_handler_char_cvr)
 				self.osc_dispatcher.map(self.osc_avatar_change_path + "*", self.osc_server_handler_avatar)
 
 				self.osc_server = osc_server.ThreadingOSCUDPServer((self.osc_server_ip, self.osc_server_port), self.osc_dispatcher, asyncio.get_event_loop())
@@ -379,7 +391,8 @@ class KatOsc:
 		if type(self.osc_server) == osc_server.ThreadingOSCUDPServer:
 			if self.osc_server_test_step > 0:
 				# Keep text cleared during test
-				self.osc_client.send_message(self.osc_parameter_prefix + self.param_pointer, self.pointer_clear)
+				self.osc_client.send_message(self.osc_parameter_prefix_vrc + self.param_pointer_vrc, self.pointer_clear)
+				self.osc_client.send_message(self.osc_parameter_prefix_cvr + self.param_pointer_cvr, self.pointer_clear)
 
 				if self.osc_server_test_step == 1:
 					# Reset sync parameters count
@@ -387,21 +400,24 @@ class KatOsc:
 
 					# Reset character text values
 					for char_index in range(self.sync_params_max):
-						self.osc_client.send_message(self.osc_parameter_prefix + self.param_sync + str(char_index), 0.0)
+						self.osc_client.send_message(self.osc_parameter_prefix_vrc + self.param_sync_vrc + str(char_index), 0.0)
+						self.osc_client.send_message(self.osc_parameter_prefix_cvr + self.param_sync_cvr + str(char_index), 0.0)
 					self.osc_server_test_step = 2
 					return
 
 				elif self.osc_server_test_step == 2:
 					# Set characters to test value
 					for char_index in range(self.sync_params_max):
-						self.osc_client.send_message(self.osc_parameter_prefix + self.param_sync + str(char_index), self.sync_params_test_char_value / 127.0)
+						self.osc_client.send_message(self.osc_parameter_prefix_vrc + self.param_sync_vrc + str(char_index), self.sync_params_test_char_value / 127.0)
+						self.osc_client.send_message(self.osc_parameter_prefix_cvr + self.param_sync_cvr + str(char_index), self.sync_params_test_char_value / 127.0)
 					self.osc_server_test_step = 3
 					return
 
 				elif self.osc_server_test_step == 3:
 					# Set characters back to 0
 					for char_index in range(self.sync_params_max):
-						self.osc_client.send_message(self.osc_parameter_prefix + self.param_sync + str(char_index), 0.0)
+						self.osc_client.send_message(self.osc_parameter_prefix_vrc + self.param_sync_vrc + str(char_index), 0.0)
+						self.osc_client.send_message(self.osc_parameter_prefix_cvr + self.param_sync_cvr + str(char_index), 0.0)
 					self.osc_server_test_step = 4
 					return
 
@@ -425,16 +441,19 @@ class KatOsc:
 			# Reset parameters
 			if self.osc_server_test_step == -1:
 				for char_index in range(self.sync_params_max):
-					self.osc_client.send_message(self.osc_parameter_prefix + self.param_sync + str(char_index), 0.0)
+					self.osc_client.send_message(self.osc_parameter_prefix_vrc + self.param_sync_vrc + str(char_index), 0.0)
+					self.osc_client.send_message(self.osc_parameter_prefix_cvr + self.param_sync_cvr + str(char_index), 0.0)
 					self.osc_server_test_step = 0
 
 			# Clear text
-			self.osc_client.send_message(self.osc_parameter_prefix + self.param_pointer, self.pointer_clear)
+			self.osc_client.send_message(self.osc_parameter_prefix_vrc + self.param_pointer_vrc, self.pointer_clear)
+			self.osc_client.send_message(self.osc_parameter_prefix_cvr + self.param_pointer_cvr, self.pointer_clear)
 			self.osc_text = " ".ljust(self.text_length)
 			return
 
 		# Make sure KAT is visible even after avatar change
-		self.osc_client.send_message(self.osc_parameter_prefix + self.param_visible, True)
+		self.osc_client.send_message(self.osc_parameter_prefix_vrc + self.param_visible_vrc, True)
+		self.osc_client.send_message(self.osc_parameter_prefix_cvr + self.param_visible_cvr, True)
 
 		# Pad line feeds with spaces for OSC
 		text_lines = gui_text.split("\n")
@@ -479,9 +498,14 @@ class KatOsc:
 
 
 	# Handle OSC server to detect the correct sync parameters to use
-	def osc_server_handler_char(self, address, value, *args):
+	def osc_server_handler_char_vrc(self, address, value, *args):
 		if self.osc_server_test_step > 0:
-			length = len(self.osc_parameter_prefix + self.param_sync)
+			length = len(self.osc_parameter_prefix_vrc + self.param_sync_vrc)
+			self.sync_params = max(self.sync_params, int(address[length:]) + 1)
+			
+	def osc_server_handler_char_cvr(self, address, value, *args):
+		if self.osc_server_test_step > 0:
+			length = len(self.osc_parameter_prefix_cvr + self.param_sync_cvr)
 			self.sync_params = max(self.sync_params, int(address[length:]) + 1)
 
 
@@ -492,7 +516,8 @@ class KatOsc:
 
 	# Updates the characters within a pointer
 	def osc_update_pointer(self, pointer_index, gui_text, osc_chars):
-		self.osc_client.send_message(self.osc_parameter_prefix + self.param_pointer, pointer_index + 1) # Set pointer position
+		self.osc_client.send_message(self.osc_parameter_prefix_vrc + self.param_pointer_vrc, pointer_index + 1) # Set pointer position
+		self.osc_client.send_message(self.osc_parameter_prefix_cvr + self.param_pointer_cvr, pointer_index + 1) # Set pointer position
 
 		# Loop through characters within this pointer and set them
 		for char_index in range(self.sync_params):
@@ -508,7 +533,8 @@ class KatOsc:
 				value = value - 256.0
 			value = value / 127.0
 
-			self.osc_client.send_message(self.osc_parameter_prefix + self.param_sync + str(char_index), value)
+			self.osc_client.send_message(self.osc_parameter_prefix_vrc + self.param_sync_vrc + str(char_index), value)
+			self.osc_client.send_message(self.osc_parameter_prefix_cvr + self.param_sync_cvr + str(char_index), value)
 			osc_chars[index] = gui_char # Apply changes to the networked value
 
 		self.osc_text = self._list_to_string(osc_chars)
@@ -546,12 +572,14 @@ class KatOsc:
 
 	# show overlay
 	def show(self):
-		self.osc_client.send_message(self.osc_parameter_prefix + self.param_visible, True) # Hide KAT
+		self.osc_client.send_message(self.osc_parameter_prefix_vrc + self.param_visible_vrc, True) # Hide KAT
+		self.osc_client.send_message(self.osc_parameter_prefix_cvr + self.param_visible_cvr, True) # Hide KAT
 
 
 	# hide overlay
 	def hide(self):
-		self.osc_client.send_message(self.osc_parameter_prefix + self.param_visible, False) # Hide KAT
+		self.osc_client.send_message(self.osc_parameter_prefix_vrc + self.param_visible_vrc, False) # Hide KAT
+		self.osc_client.send_message(self.osc_parameter_prefix_cvr + self.param_visible_cvr, False) # Hide KAT
 
 
 
